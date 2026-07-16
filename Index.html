@@ -1,1 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Weight Tracker</title>
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Weight%20Tracker%22%2C%22short_name%22%3A%22Tracker%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%7D">
+    <meta name="theme-color" content="#4f46e5">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #334155; min-height: 100vh; padding: 2rem 1rem; }
+        .container { max-width: 56rem; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { font-size: 1.875rem; font-weight: 800; color: #4f46e5; letter-spacing: -0.025em; }
+        header p { color: #64748b; margin-top: 0.25rem; font-size: 0.875rem; }
+        
+        .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
+        
+        .card { background: #ffffff; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; height: fit-content; }
+        .card h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #334155; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; tracking: 0.05em; margin-bottom: 0.25rem; }
+        .form-group input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; outline: none; }
+        .form-group input:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        
+        .btn-submit { display: block; width: 100%; background: #4f46e5; color: #ffffff; font-weight: 500; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.875rem; transition: background 0.2s; text-align: center; }
+        .btn-submit:hover { background: #4338ca; }
+        
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .metric-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; }
+        .metric-value-row { display: flex; align-items: baseline; gap: 0.25rem; margin-top: 0.25rem; }
+        .metric-val { font-size: 1.5rem; font-weight: 700; color: #334155; }
+        .metric-val.current { color: #4f46e5; }
+        .metric-unit { font-size: 0.75rem; color: #94a3b8; }
+        .metric-meta { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 0.25rem; }
+        
+        .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 0.25rem; margin-top: 0.25rem; }
+        .badge.loss { background: #ecfdf5; color: #047857; }
+        .badge.gain { background: #fffbeb; color: #b45309; }
+        .badge.neutral { background: #f1f5f9; color: #475569; }
+        
+        /* Interactive Native SVG Chart */
+        .chart-wrapper { width: 100%; padding: 1rem 0; margin-bottom: 1.5rem; background: #fafafa; border-radius: 0.75rem; display: none; }
+        .chart-svg { width: 100%; height: 160px; display: block; overflow: visible; }
+        
+        .weekly-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+        .week-card { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 0.75rem; border: 1px solid #f1f5f9; }
+        .week-title { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        .week-sub { font-size: 0.875rem; color: #64748b; margin-top: 0.125rem; }
+        .week-right { text-align: right; }
+        .week-avg { font-size: 1.125rem; font-weight: 700; color: #1e293b; }
+        
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .count-badge { font-size: 0.75rem; background: #f1f5f9; color: #475569; font-weight: 600; padding: 0.25rem 0.625rem; border-radius: 9999px; }
+        
+        .table-container { overflow-x: auto; max-height: 20rem; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; color: #475569; }
+        th { padding: 0.625rem 1rem; text-transform: uppercase; font-size: 0.75rem; color: #94a3b8; background: #f8fafc; font-weight: 600; position: sticky; top: 0; }
+        td { padding: 0.75rem 1rem; border-top: 1px solid #f1f5f9; }
+        tr:hover { background-color: #f8fafc; }
+        .txt-indigo { font-weight: 600; color: #4f46e5; }
+        .txt-loss { color: #16a34a; font-weight: 500; }
+        .txt-gain { color: #d97706; font-weight: 500; }
+        .txt-flat { color: #94a3b8; }
+        
+        .btn-delete { background: none; border: none; color: #ef4444; font-weight: 500; font-size: 0.75rem; cursor: pointer; }
+        .btn-delete:hover { color: #b91c1c; }
+        .empty-text { color: #94a3b8; font-size: 0.875rem; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Scales & Progress</h1>
+            <p>Track your daily weight & view your weekly trends securely offline.</p>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Log Weight</h2>
+                <form id="weightForm">
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight</label>
+                        <input type="number" id="weight" step="0.01" placeholder="e.g. 74.55" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Save Entry</button>
+                </form>
+            </div>
+
+            <div>
+                <div class="metrics-grid">
+                    <div class="card">
+                        <span class="metric-label">Start Weight</span>
+                        <div class="metric-value-row">
+                            <span id="startWeightVal" class="metric-val">—</span>
+                            <span class="metric-unit">lbs/kg</span>
+                        </div>
+                        <span id="startDateVal" class="metric-meta">No data logged</span>
+                    </div>
+                    <div class="card">
+                        <span class="metric-label">Current Weight</span>
+                        <div class="metric-value-row">
+                            <span id="currentWeightVal" class="metric-val current">—</span>
+                            <span class="metric-unit" style="color:#4f46e5">lbs/kg</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                            <span id="currentDateVal" class="metric-meta" style="margin-top:0">No data logged</span>
+                            <span id="totalDiffBadge" class="badge" style="display:none"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <h2>Weekly Progress Summary</h2>
+                    
+                    <div id="chartWrapper" class="chart-wrapper">
+                        <svg id="weeklyChart" class="chart-svg"></svg>
+                    </div>
+
+                    <div id="weeklySummaryContainer" class="weekly-stack">
+                        <p class="empty-text">Log a few days of weights to generate weekly summaries.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="history-header">
+                        <h2>History</h2>
+                        <span id="logCount" class="count-badge">0 entries</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight</th>
+                                    <th>Daily Change</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+        let db;
+        const dbName = "WeightTrackerDB";
+        const storeName = "weights";
+        const request = indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: "date" });
+            }
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            updateDashboard();
+        };
+
+        document.getElementById('weightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const date = document.getElementById('date').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            if (!date || isNaN(weight)) return;
+
+            const transaction = db.transaction([storeName], "readwrite");
+            const store = transaction.objectStore(storeName);
+            store.put({ date, weight });
+            transaction.oncomplete = function() {
+                updateDashboard();
+                document.getElementById('weight').value = '';
+            };
+        });
+
+        function deleteEntry(date) {
+            const transaction = db.transaction([storeName], "readwrite");
+            const store = transaction.objectStore(storeName);
+            store.delete(date);
+            transaction.oncomplete = function() { updateDashboard(); };
+        }
+
+        function updateDashboard() {
+            const transaction = db.transaction([storeName], "readonly");
+            const store = transaction.objectStore(storeName);
+            const req = store.getAll();
+            req.onsuccess = function() {
+                const data = req.result;
+                // Keep chronological alignment order (oldest -> newest) for tracking differentials
+                data.sort((a, b) => new Date(a.date) - new Date(b.date));
+                renderMetrics(data);
+                renderHistoryTable(data);
+                renderWeeklySummary(data);
+            };
+        }
+
+        function renderMetrics(data) {
+            const startWeightVal = document.getElementById('startWeightVal');
+            const startDateVal = document.getElementById('startDateVal');
+            const currentWeightVal = document.getElementById('currentWeightVal');
+            const currentDateVal = document.getElementById('currentDateVal');
+            const totalDiffBadge = document.getElementById('totalDiffBadge');
+
+            if (data.length === 0) {
+                startWeightVal.textContent = '—'; startDateVal.textContent = 'No data logged';
+                currentWeightVal.textContent = '—'; currentDateVal.textContent = 'No data logged';
+                totalDiffBadge.style.display = 'none'; return;
+            }
+
+            const startEntry = data[0];
+            const currentEntry = data[data.length - 1];
+            startWeightVal.textContent = startEntry.weight.toFixed(2);
+            startDateVal.textContent = `on ${formatDateString(startEntry.date)}`;
+            currentWeightVal.textContent = currentEntry.weight.toFixed(2);
+            currentDateVal.textContent = `on ${formatDateString(currentEntry.date)}`;
+
+            const diff = currentEntry.weight - startEntry.weight;
+            totalDiffBadge.style.display = 'inline-block';
+            totalDiffBadge.className = 'badge';
+            if (diff < 0) {
+                totalDiffBadge.textContent = `${diff.toFixed(2)}`; totalDiffBadge.classList.add('loss');
+            } else if (diff > 0) {
+                totalDiffBadge.textContent = `+${diff.toFixed(2)}`; totalDiffBadge.classList.add('gain');
+            } else {
+                totalDiffBadge.textContent = '0.00'; totalDiffBadge.classList.add('neutral');
+            }
+        }
+
+        function renderHistoryTable(data) {
+            const tbody = document.getElementById('historyTableBody');
+            const countBadge = document.getElementById('logCount');
+            tbody.innerHTML = ''; countBadge.textContent = `${data.length} entries`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="padding: 1.5rem; text-align: center;" class="empty-text">No entries logged yet.</td></tr>`; return;
+            }
+
+            const rowsHtml = [];
+            data.forEach((entry, idx) => {
+                let changeCell = `<span class="txt-flat">—</span>`;
+                if (idx > 0) {
+                    const diff = entry.weight - data[idx - 1].weight;
+                    if (diff < 0) changeCell = `<span class="txt-loss">-${Math.abs(diff).toFixed(2)}</span>`;
+                    else if (diff > 0) changeCell = `<span class="txt-gain">+${diff.toFixed(2)}</span>`;
+                    else changeCell = `<span class="txt-flat">0.00</span>`;
+                }
+                rowsHtml.push(`
+                    <tr>
+                        <td>${formatDateString(entry.date)}</td>
+                        <td class="txt-indigo">${entry.weight.toFixed(2)}</td>
+                        <td>${changeCell}</td>
+                        <td style="text-align: right;"><button onclick="deleteEntry('${entry.date}')" class="btn-delete">Delete</button></td>
+                    </tr>
+                `);
+            });
+            // Show newest entry at the very top of the table list
+            tbody.innerHTML = rowsHtml.reverse().join('');
+        }
+
+        function renderWeeklySummary(data) {
+            const container = document.getElementById('weeklySummaryContainer');
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                document.getElementById('chartWrapper').style.display = 'none';
+                container.innerHTML = `<p class="empty-text">Log a few days of weights to generate weekly summaries.</p>`; 
+                return;
+            }
+
+            const weeks = {};
+            data.forEach(entry => {
+                const weekKey = getStartOfWeekDate(entry.date);
+                if (!weeks[weekKey]) weeks[weekKey] = [];
+                weeks[weekKey].push(entry.weight);
+            });
+
+            const weeklyAverages = [];
+            for (const [weekStart, weights] of Object.entries(weeks)) {
+                weeklyAverages.push({ 
+                    weekStart, 
+                    avgWeight: weights.reduce((a, b) => a + b, 0) / weights.length, 
+                    entryCount: weights.length 
+                });
+            }
+            
+            // Graph points must map chronologically (oldest to newest)
+            weeklyAverages.sort((a, b) => new Date(a.weekStart) - new Date(b.weekStart));
+            
+            // Trigger local SVG dashboard line calculation
+            generateChart(weeklyAverages);
+
+            // Reverse layout view order so newest summary block cards render first
+            const displayList = [...weeklyAverages].reverse();
+
+            displayList.forEach((currentWeek, index) => {
+                const nextWeekInList = displayList[index + 1];
+                let changeText = '—', badgeClass = 'neutral';
+                if (nextWeekInList) {
+                    const diff = currentWeek.avgWeight - nextWeekInList.avgWeight;
+                    if (diff < 0) { changeText = `Reduced ${Math.abs(diff).toFixed(2)}`; badgeClass = 'loss'; }
+                    else if (diff > 0) { changeText = `Gained +${diff.toFixed(2)}`; badgeClass = 'gain'; }
+                    else { changeText = 'No Change'; }
+                }
+
+                const weekCard = document.createElement('div');
+                weekCard.className = "week-card";
+                weekCard.innerHTML = `
+                    <div>
+                        <div class="week-title">Week of ${formatDateString(currentWeek.weekStart)}</div>
+                        <div class="week-sub">${currentWeek.entryCount} day(s) logged</div>
+                    </div>
+                    <div class="week-right">
+                        <div class="week-avg">${currentWeek.avgWeight.toFixed(2)} <span style="font-size:0.75rem; font-weight:normal; color:#94a3b8">avg</span></div>
+                        <span class="badge ${badgeClass}">${changeText}</span>
+                    </div>`;
+                container.appendChild(weekCard);
+            });
+        }
+
+        function generateChart(weeklyData) {
+            const wrapper = document.getElementById('chartWrapper');
+            const svg = document.getElementById('weeklyChart');
+            svg.innerHTML = ''; 
+            
+            if (weeklyData.length < 1) {
+                wrapper.style.display = 'none';
+                return;
+            }
+            wrapper.style.display = 'block';
+
+            const weights = weeklyData.map(d => d.avgWeight);
+            const minWeight = Math.min(...weights) - 1;
+            const maxWeight = Math.max(...weights) + 1;
+            const weightRange = maxWeight - minWeight || 1;
+
+            const height = 120;
+            const paddingLeft = 45;
+            const paddingRight = 20;
+            const paddingTop = 20;
+            const width = svg.clientWidth || 500;
+            
+            const usableWidth = width - paddingLeft - paddingRight;
+            const stepX = weeklyData.length > 1 ? usableWidth / (weeklyData.length - 1) : usableWidth;
+
+            const points = weeklyData.map((d, i) => {
+                const x = paddingLeft + (i * stepX);
+                const y = paddingTop + (height - ((d.avgWeight - minWeight) / weightRange) * height);
+                return { x, y, label: formatShortDate(d.weekStart), value: d.avgWeight.toFixed(1) };
+            });
+
+            // Grid y-axis lines
+            const linesCount = 3;
+            for(let i=0; i<=linesCount; i++) {
+                const currVal = minWeight + (weightRange / linesCount) * i;
+                const yPos = paddingTop + (height - (i / linesCount) * height);
+                
+                const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txt.setAttribute("x", paddingLeft - 8);
+                txt.setAttribute("y", yPos + 4);
+                txt.setAttribute("text-anchor", "end");
+                txt.setAttribute("fill", "#94a3b8");
+                txt.setAttribute("style", "font-size: 10px; font-weight: 500;");
+                txt.textContent = currVal.toFixed(1);
+                svg.appendChild(txt);
+
+                const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                l.setAttribute("x1", paddingLeft);
+                l.setAttribute("y1", yPos);
+                l.setAttribute("x2", width - paddingRight);
+                l.setAttribute("y2", yPos);
+                l.setAttribute("stroke", "#f1f5f9");
+                l.setAttribute("stroke-width", "1");
+                svg.appendChild(l);
+            }
+
+            // Draw connecting path line
+            if (points.length > 1) {
+                let dAttr = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    dAttr += ` L ${points[i].x} ${points[i].y}`;
+                }
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", dAttr);
+                path.setAttribute("fill", "none");
+                path.setAttribute("stroke", "#4f46e5");
+                path.setAttribute("stroke-width", "3");
+                path.setAttribute("stroke-linecap", "round");
+                svg.appendChild(path);
+            }
+
+            // Draw points nodes
+            points.forEach((p) => {
+                const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                c.setAttribute("cx", p.x);
+                c.setAttribute("cy", p.y);
+                c.setAttribute("r", "4");
+                c.setAttribute("fill", "#ffffff");
+                c.setAttribute("stroke", "#4f46e5");
+                c.setAttribute("stroke-width", "2.5");
+                svg.appendChild(c);
+
+                const valTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                valTxt.setAttribute("x", p.x);
+                valTxt.setAttribute("y", p.y - 8);
+                valTxt.setAttribute("text-anchor", "middle");
+                valTxt.setAttribute("fill", "#475569");
+                valTxt.setAttribute("style", "font-size: 10px; font-weight: 600;");
+                valTxt.textContent = p.value;
+                svg.appendChild(valTxt);
+
+                const lblTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                lblTxt.setAttribute("x", p.x);
+                lblTxt.setAttribute("y", paddingTop + height + 16);
+                lblTxt.setAttribute("text-anchor", "middle");
+                lblTxt.setAttribute("fill", "#94a3b8");
+                lblTxt.setAttribute("style", "font-size: 10px; font-weight: 500;");
+                lblTxt.textContent = p.label;
+                svg.appendChild(lblTxt);
+            });
+        }
+
+        function getStartOfWeekDate(dateStr) {
+            const date = new Date(dateStr); const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(date.setDate(diff)).toISOString().split('T')[0];
+        }
+
+        function formatDateString(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        }
+
+        function formatShortDate(dateStr) {
+            const d = new Date(dateStr);
+            return `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}`;
+        }
+
+        // --- Native Service Worker Activation ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('install', e => self.skipWaiting());
+                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                    self.addEventListener('fetch', e => {
+                        e.respondWith(fetch(e.request).catch(() => new Response("Offline Active")));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
 
