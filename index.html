@@ -4,17 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Weight Tracker</title>
+    <!-- Inline Manifest configuration to satisfy secure PWA standards on GitHub Pages -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Weight%20Tracker%22%2C%22short_name%22%3A%22Tracker%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%7D">
     <meta name="theme-color" content="#4f46e5">
     
+    <!-- Embedded Full Offline Stylesheet (No external CDN dependencies) -->
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #f8fafc; color: #334155; min-height: 100vh; padding: 2rem 1rem; }
+        body { background-color: #f8fafc; color: #334155; min-height: 100vh; padding-top: 5rem; padding-bottom: 2rem; padding-left: 1rem; padding-right: 1rem; }
         .container { max-width: 56rem; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 2rem; }
+        header { text-align: center; margin-bottom: 2rem; margin-top: 1rem; }
         header h1 { font-size: 1.875rem; font-weight: 800; color: #4f46e5; letter-spacing: -0.025em; }
         header p { color: #64748b; margin-top: 0.25rem; font-size: 0.875rem; }
         
+        /* --- Responsive Navbar Styles --- */
+        .navbar { position: fixed; top: 0; left: 0; right: 0; height: 4rem; background: #ffffff; border-bottom: 1px solid #f1f5f9; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 100; }
+        .nav-logo { font-size: 1.25rem; font-weight: 800; color: #4f46e5; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
+        .nav-links a { text-decoration: none; color: #64748b; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: #4f46e5; }
+        
+        /* Burger Menu Button (Mobile Only) */
+        .nav-burger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 110; }
+        .nav-burger svg { width: 1.5rem; height: 1.5rem; fill: none; stroke: #334155; stroke-width: 2; stroke-linecap: round; }
+        
+        /* Mobile Slide-out Sidebar Drawer */
+        @media (max-width: 767px) {
+            .nav-links { position: fixed; top: 0; right: -100%; width: 16rem; height: 100vh; background: #ffffff; box-shadow: -4px 0 15px rgba(0,0,0,0.05); border-left: 1px solid #f1f5f9; flex-direction: column; align-items: flex-start; padding: 5rem 2rem; gap: 2rem; transition: right 0.3s ease-in-out; }
+            .nav-links.sidebar-open { right: 0; }
+            .nav-burger { display: block; }
+            /* Backdrop Overlay background when sidebar is open */
+            .nav-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.3); z-index: 90; }
+            .nav-overlay.active { display: block; }
+        }
+        
+        /* --- Core Layout & Components --- */
         .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
         @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
         
@@ -42,7 +66,7 @@
         .badge.gain { background: #fffbeb; color: #b45309; }
         .badge.neutral { background: #f1f5f9; color: #475569; }
         
-        /* Interactive Native SVG Chart */
+        /* Chart container */
         .chart-wrapper { width: 100%; padding: 1rem 0; margin-bottom: 1.5rem; background: #fafafa; border-radius: 0.75rem; display: none; }
         .chart-svg { width: 100%; height: 160px; display: block; overflow: visible; }
         
@@ -73,6 +97,25 @@
 </head>
 <body>
 
+    <!-- Responsive Navigation Top-Bar -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo">
+            <svg style="width:1.5rem; height:1.5rem; fill:#4f46e5" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2M4 12c0-4.03 3.03-7.37 7-7.92V7.1c-2.32.48-4 2.53-4 4.9 0 2.37 1.68 4.42 4 4.9v3.02c-3.97-.55-7-3.89-7-7.92m9-7.92c3.97.55 7 3.89 7 7.92s-3.03 7.37-7 7.92V16.9c2.32-.48 4-2.53 4-4.902 0-2.37-1.68-4.42-4-4.9V4.08z"/></svg>
+            <span>Scales & Progress</span>
+        </a>
+        <div class="nav-overlay" id="navOverlay"></div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#" class="active">Dashboard</a></li>
+        </ul>
+        <button class="nav-burger" id="navBurger" aria-label="Toggle Navigation Menu">
+            <svg id="burgerIcon" viewBox="0 0 24 24">
+                <path id="line1" d="M4 6h16" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"></path>
+                <path id="line2" d="M4 12h16" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"></path>
+                <path id="line3" d="M4 18h16" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+        </button>
+    </nav>
+
     <div class="container">
         <header>
             <h1>Scales & Progress</h1>
@@ -80,6 +123,7 @@
         </header>
 
         <div class="grid">
+            <!-- Left Column: Log Weight Form -->
             <div class="card">
                 <h2>Log Weight</h2>
                 <form id="weightForm">
@@ -95,7 +139,9 @@
                 </form>
             </div>
 
+            <!-- Right Column: Dashboard Summary & Analytics -->
             <div>
+                <!-- Key Metrics Widget -->
                 <div class="metrics-grid">
                     <div class="card">
                         <span class="metric-label">Start Weight</span>
@@ -118,9 +164,11 @@
                     </div>
                 </div>
                 
+                <!-- Weekly Progress Summary Box -->
                 <div class="card" style="margin-bottom: 1.5rem;">
                     <h2>Weekly Progress Summary</h2>
                     
+                    <!-- Native Offline SVG Chart Window -->
                     <div id="chartWrapper" class="chart-wrapper">
                         <svg id="weeklyChart" class="chart-svg"></svg>
                     </div>
@@ -130,6 +178,7 @@
                     </div>
                 </div>
 
+                <!-- Daily History Log Table -->
                 <div class="card">
                     <div class="history-header">
                         <h2>History</h2>
@@ -153,7 +202,40 @@
         </div>
     </div>
 
+    <!-- Core App Logic -->
     <script>
+        // --- Responsive Navbar Interactive Control Logic ---
+        const burgerBtn = document.getElementById('navBurger');
+        const navLinks = document.getElementById('navLinks');
+        const navOverlay = document.getElementById('navOverlay');
+        const line2 = document.getElementById('line2');
+        const line1 = document.getElementById('line1');
+        const line3 = document.getElementById('line3');
+
+        function toggleMenu() {
+            const isOpen = navLinks.classList.toggle('sidebar-open');
+            navOverlay.classList.toggle('active', isOpen);
+            
+            if (isOpen) {
+                line1.setAttribute('d', 'M6 18L18 6');
+                line2.style.opacity = '0';
+                line3.setAttribute('d', 'M6 6l12 12');
+            } else {
+                line1.setAttribute('d', 'M4 6h16');
+                line2.style.opacity = '1';
+                line3.setAttribute('d', 'M4 18h16');
+            }
+        }
+
+        burgerBtn.addEventListener('click', toggleMenu);
+        navOverlay.addEventListener('click', toggleMenu);
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navLinks.classList.contains('sidebar-open')) toggleMenu();
+            });
+        });
+
+        // --- Core Weight Log Calculations & Data Management (IndexedDB) ---
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
 
         let db;
@@ -201,7 +283,6 @@
             const req = store.getAll();
             req.onsuccess = function() {
                 const data = req.result;
-                // Keep chronological alignment order (oldest -> newest) for tracking differentials
                 data.sort((a, b) => new Date(a.date) - new Date(b.date));
                 renderMetrics(data);
                 renderHistoryTable(data);
@@ -268,7 +349,6 @@
                     </tr>
                 `);
             });
-            // Show newest entry at the very top of the table list
             tbody.innerHTML = rowsHtml.reverse().join('');
         }
 
@@ -298,13 +378,9 @@
                 });
             }
             
-            // Graph points must map chronologically (oldest to newest)
             weeklyAverages.sort((a, b) => new Date(a.weekStart) - new Date(b.weekStart));
-            
-            // Trigger local SVG dashboard line calculation
             generateChart(weeklyAverages);
 
-            // Reverse layout view order so newest summary block cards render first
             const displayList = [...weeklyAverages].reverse();
 
             displayList.forEach((currentWeek, index) => {
@@ -363,7 +439,6 @@
                 return { x, y, label: formatShortDate(d.weekStart), value: d.avgWeight.toFixed(1) };
             });
 
-            // Grid y-axis lines
             const linesCount = 3;
             for(let i=0; i<=linesCount; i++) {
                 const currVal = minWeight + (weightRange / linesCount) * i;
@@ -388,7 +463,6 @@
                 svg.appendChild(l);
             }
 
-            // Draw connecting path line
             if (points.length > 1) {
                 let dAttr = `M ${points[0].x} ${points[0].y}`;
                 for (let i = 1; i < points.length; i++) {
@@ -403,7 +477,6 @@
                 svg.appendChild(path);
             }
 
-            // Draw points nodes
             points.forEach((p) => {
                 const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 c.setAttribute("cx", p.x);
@@ -448,9 +521,7 @@
             const d = new Date(dateStr);
             return `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}`;
         }
-        
 
-        // --- Native Service Worker Activation ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
