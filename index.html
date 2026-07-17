@@ -21,8 +21,8 @@
         .navbar { position: fixed; top: 0; left: 0; right: 0; height: 4rem; background: #ffffff; border-bottom: 1px solid #f1f5f9; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 50; }
         .nav-logo { font-size: 1.25rem; font-weight: 800; color: #4f46e5; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .nav-links { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
-        .nav-links a { text-decoration: none; color: #64748b; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: #4f46e5; }
+        .nav-links a { text-decoration: none; color: #64748b; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; cursor: pointer; }
+        .nav-links a:hover, .nav-links a.active { color: #4f46e5; font-weight: 600; }
         
         /* Burger Menu Button (Mobile Only) */
         .nav-burger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 110; }
@@ -33,22 +33,30 @@
             .nav-links { position: fixed; top: 0; right: -100%; width: 16rem; height: 100vh; background: #ffffff; box-shadow: -4px 0 15px rgba(0,0,0,0.05); border-left: 1px solid #f1f5f9; flex-direction: column; align-items: flex-start; padding: 5rem 2rem; gap: 2rem; transition: right 0.3s ease-in-out; z-index: 1001; }
             .nav-links.sidebar-open { right: 0; }
             .nav-burger { display: block; z-index: 1002; }
-            /* Backdrop Overlay fixed layer elevation */
             .nav-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); z-index: 1000; }
             .nav-overlay.active { display: block; }
         }
         
-        /* --- Core Layout & Components --- */
+        /* --- Native Page Tab Routing Systems --- */
+        .app-page { display: none; }
+        .app-page.active-page { display: block; }
+        
+        /* --- Layout & Core Card Components --- */
         .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-        @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
+        @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } .grid-equal { grid-template-columns: 1fr 1fr; } }
         
         .card { background: #ffffff; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; height: fit-content; }
         .card h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #334155; }
+        .card p.sub { color: #64748b; font-size: 0.875rem; margin-top: -0.5rem; margin-bottom: 1.25rem; }
         
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; tracking: 0.05em; margin-bottom: 0.25rem; }
-        .form-group input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; outline: none; }
-        .form-group input:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        .form-group input, .form-group select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; outline: none; background-color: #fff; }
+        .form-group input:focus, .form-group select:focus { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        
+        .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .radio-card { border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; }
+        .radio-card input { width: auto; cursor: pointer; }
         
         .btn-submit { display: block; width: 100%; background: #4f46e5; color: #ffffff; font-weight: 500; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.875rem; transition: background 0.2s; text-align: center; }
         .btn-submit:hover { background: #4338ca; }
@@ -59,13 +67,13 @@
         .metric-val { font-size: 1.5rem; font-weight: 700; color: #334155; }
         .metric-val.current { color: #4f46e5; }
         .metric-unit { font-size: 0.75rem; color: #94a3b8; }
-        .nav-overlay.active { display: block; }
         .metric-meta { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 0.25rem; }
         
         .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 0.25rem; margin-top: 0.25rem; }
-        .badge.loss { background: #ecfdf5; color: #047857; }
-        .badge.gain { background: #fffbeb; color: #b45309; }
-        .badge.neutral { background: #f1f5f9; color: #475569; }
+        .badge.loss, .badge.status-normal { background: #ecfdf5; color: #047857; }
+        .badge.gain, .badge.status-warning { background: #fffbeb; color: #b45309; }
+        .badge.neutral, .badge.status-neutral { background: #f1f5f9; color: #475569; }
+        .badge.status-danger { background: #fef2f2; color: #b91c1c; }
         
         /* Chart container */
         .chart-wrapper { width: 100%; padding: 1rem 0; margin-bottom: 1.5rem; background: #fafafa; border-radius: 0.75rem; display: none; }
@@ -94,19 +102,35 @@
         .btn-delete { background: none; border: none; color: #ef4444; font-weight: 500; font-size: 0.75rem; cursor: pointer; }
         .btn-delete:hover { color: #b91c1c; }
         .empty-text { color: #94a3b8; font-size: 0.875rem; font-style: italic; }
+
+        /* Fitness Calculator Panel Enhancements */
+        .results-box { padding: 1rem; background: #f8fafc; border-radius: 0.75rem; border: 1px solid #e2e8f0; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .results-left h4 { font-size: 0.875rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .results-left .res-val { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-top: 0.125rem; }
+
+        /* Parameter Info Panel */
+        .param-info-panel { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0; }
+        .param-section { margin-bottom: 1.25rem; }
+        .param-section h5 { font-size: 0.8125rem; font-weight: 700; color: #4f46e5; text-transform: uppercase; margin-bottom: 0.375rem; }
+        .param-section p { font-size: 0.8125rem; color: #64748b; line-height: 1.4; }
+        
+        .param-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.75rem; border: 1px solid #f1f5f9; }
+        .param-table th, .param-table td { padding: 0.375rem 0.5rem; text-align: left; background: none; position: static; }
+        .param-table tr:nth-child(even) { background-color: #fafafa; }
     </style>
 </head>
 <body>
 
     <!-- Responsive Navigation Top-Bar -->
     <nav class="navbar">
-        <a href="#" class="nav-logo">
+        <a onclick="switchTab('dashboard')" class="nav-logo" style="cursor:pointer">
             <svg style="width:1.5rem; height:1.5rem; fill:#4f46e5" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2M4 12c0-4.03 3.03-7.37 7-7.92V7.1c-2.32.48-4 2.53-4 4.9 0 2.37 1.68 4.42 4 4.9v3.02c-3.97-.55-7-3.89-7-7.92m9-7.92c3.97.55 7 3.89 7 7.92s-3.03 7.37-7 7.92V16.9c2.32-.48 4-2.53 4-4.902 0-2.37-1.68-4.42-4-4.9V4.08z"/></svg>
             <span>Scales & Progress</span>
         </a>
         <div class="nav-overlay" id="navOverlay"></div>
         <ul class="nav-links" id="navLinks">
-            <li><a href="#" class="active">Dashboard</a></li>
+            <li><a id="nav-dashboard" onclick="switchTab('dashboard')" class="active">Dashboard</a></li>
+            <li><a id="nav-fitness" onclick="switchTab('fitness')">Fitness Calculator</a></li>
         </ul>
         <button class="nav-burger" id="navBurger" aria-label="Toggle Navigation Menu">
             <svg id="burgerIcon" viewBox="0 0 24 24">
@@ -118,94 +142,229 @@
     </nav>
 
     <div class="container">
-        <header>
-            <h1>Scales & Progress</h1>
-            <p>Track your daily weight & view your weekly trends securely offline.</p>
-        </header>
 
-        <div class="grid">
-            <!-- Left Column: Log Weight Form -->
-            <div class="card">
-                <h2>Log Weight</h2>
-                <form id="weightForm">
-                    <div class="form-group">
-                        <label for="date">Date</label>
-                        <input type="date" id="date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="weight">Weight</label>
-                        <input type="number" id="weight" step="0.01" placeholder="e.g. 74.55" required>
-                    </div>
-                    <button type="submit" class="btn-submit">Save Entry</button>
-                </form>
-            </div>
+        <!-- PAGE 1: TRACKER DASHBOARD -->
+        <div id="page-dashboard" class="app-page active-page">
+            <header>
+                <h1>Weight Tracker</h1>
+                <p>Track your daily weight & view your weekly trends securely offline.</p>
+            </header>
 
-            <!-- Right Column: Dashboard Summary & Analytics -->
-            <div>
-                <!-- Key Metrics Widget -->
-                <div class="metrics-grid">
-                    <div class="card">
-                        <span class="metric-label">Start Weight</span>
-                        <div class="metric-value-row">
-                            <span id="startWeightVal" class="metric-val">—</span>
-                            <span class="metric-unit">lbs/kg</span>
-                        </div>
-                        <span id="startDateVal" class="metric-meta">No data logged</span>
-                    </div>
-                    <div class="card">
-                        <span class="metric-label">Current Weight</span>
-                        <div class="metric-value-row">
-                            <span id="currentWeightVal" class="metric-val current">—</span>
-                            <span class="metric-unit" style="color:#4f46e5">lbs/kg</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
-                            <span id="currentDateVal" class="metric-meta" style="margin-top:0">No data logged</span>
-                            <span id="totalDiffBadge" class="badge" style="display:none"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Weekly Progress Summary Box -->
-                <div class="card" style="margin-bottom: 1.5rem;">
-                    <h2>Weekly Progress Summary</h2>
-                    
-                    <!-- Native Offline SVG Chart Window -->
-                    <div id="chartWrapper" class="chart-wrapper">
-                        <svg id="weeklyChart" class="chart-svg"></svg>
-                    </div>
-
-                    <div id="weeklySummaryContainer" class="weekly-stack">
-                        <p class="empty-text">Log a few days of weights to generate weekly summaries.</p>
-                    </div>
-                </div>
-
-                <!-- Daily History Log Table -->
+            <div class="grid">
                 <div class="card">
-                    <div class="history-header">
-                        <h2>History</h2>
-                        <span id="logCount" class="count-badge">0 entries</span>
+                    <h2>Log Weight</h2>
+                    <form id="weightForm">
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
                     </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Weight</th>
-                                    <th>Daily Change</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody"></tbody>
-                        </table>
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" step="0.01" placeholder="e.g. 74.55" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Save Entry</button>
+                    </form>
+                </div>
+
+                <div>
+                    <div class="metrics-grid">
+                        <div class="card">
+                            <span class="metric-label">Start Weight</span>
+                            <div class="metric-value-row">
+                                <span id="startWeightVal" class="metric-val">—</span>
+                                <span class="metric-unit">kg</span>
+                            </div>
+                            <span id="startDateVal" class="metric-meta">No data logged</span>
+                        </div>
+                        <div class="card">
+                            <span class="metric-label">Current Weight</span>
+                            <div class="metric-value-row">
+                                <span id="currentWeightVal" class="metric-val current">—</span>
+                                <span class="metric-unit" style="color:#4f46e5">kg</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                                <span id="currentDateVal" class="metric-meta" style="margin-top:0">No data logged</span>
+                                <span id="totalDiffBadge" class="badge" style="display:none"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <h2>Weekly Progress Summary</h2>
+                        <div id="chartWrapper" class="chart-wrapper">
+                            <svg id="weeklyChart" class="chart-svg"></svg>
+                        </div>
+                        <div id="weeklySummaryContainer" class="weekly-stack">
+                            <p class="empty-text">Log a few days of weights to generate weekly summaries.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="history-header">
+                            <h2>History</h2>
+                            <span id="logCount" class="count-badge">0 entries</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Weight</th>
+                                        <th>Daily Change</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- PAGE 2: FITNESS CALCULATOR -->
+        <div id="page-fitness" class="app-page">
+            <header>
+                <h1>Fitness & Composition</h1>
+                <p>Configure your biometric dimensions to evaluate body composition indices.</p>
+            </header>
+
+            <div class="grid grid-equal">
+                <!-- User Dimensions Intake Configuration Card -->
+                <div class="card">
+                    <h2>Biometric Profiles</h2>
+                    <p class="sub">Data remains saved local-first on your machine.</p>
+                    <form id="fitnessForm">
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <div class="radio-grid">
+                                <label class="radio-card"><input type="radio" name="gender" value="male" checked> Male</label>
+                                <label class="radio-card"><input type="radio" name="gender" value="female"> Female</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="fitHeight">Height (cm)</label>
+                            <input type="number" id="fitHeight" placeholder="e.g. 175" required min="100" max="250">
+                        </div>
+                        <div class="form-group">
+                            <label for="fitAge">Age (Years)</label>
+                            <input type="number" id="fitAge" placeholder="e.g. 28" required min="1" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="fitWaist">Waist Circumference (cm)</label>
+                            <input type="number" id="fitWaist" placeholder="e.g. 84" required min="40" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label for="fitBodyType">Somatotype (Body Type)</label>
+                            <select id="fitBodyType">
+                                <option value="mesomorph">Mesomorph (Athletic / Muscular)</option>
+                                <option value="ectomorph">Ectomorph (Lean / High-Metabolism)</option>
+                                <option value="endomorph">Endomorph (Stocky / Slow-Metabolism)</option>
+                            </select>
+                        </div>
+                        <button type="button" onclick="calculateFitnessComposition()" class="btn-submit">Compute Metrics</button>
+                    </form>
+                </div>
+
+                <!-- Calculator Outputs Panel with Direct Parameters Embedded Inline -->
+                <div class="card">
+                    <h2>Composition Analysis</h2>
+                    <p class="sub" id="calculationNotice">Please enter profile details to review analysis indicators.</p>
+                    
+                    <div id="fitnessResults" style="display:none;" class="weekly-stack">
+                        <!-- BMI Result Box -->
+                        <div class="results-box">
+                            <div class="results-left">
+                                <h4>Body Mass Index (BMI)</h4>
+                                <div class="res-val" id="resBMI">—</div>
+                            </div>
+                            <span id="resBMIBadge" class="badge neutral">Evaluating</span>
+                        </div>
+
+                        <!-- BMR Result Box -->
+                        <div class="results-box">
+                            <div class="results-left">
+                                <h4>Basal Metabolic Rate (BMR)</h4>
+                                <div class="res-val" id="resBMR">— <span style="font-size:0.875rem; font-weight:normal; color:#64748b">kcal/day</span></div>
+                            </div>
+                            <span class="badge status-neutral" style="background:#e0e7ff; color:#4338ca;">Baseline calories</span>
+                        </div>
+
+                        <!-- Visceral Fat Proxy Box -->
+                        <div class="results-box">
+                            <div class="results-left">
+                                <h4>Visceral Fat Index (Est.)</h4>
+                                <div class="res-val" id="resVisceral">—</div>
+                            </div>
+                            <span id="resVisceralBadge" class="badge neutral">Evaluating</span>
+                        </div>
+
+                        <!-- Somatotype Blueprint Insights Box -->
+                        <div class="results-box" style="flex-direction:column; align-items:flex-start; gap:0.5rem; margin-bottom:1rem;">
+                            <h4> Somatotype Archetype Insight</h4>
+                            <p id="resBodyInsight" style="font-size:0.875rem; color:#475569; line-height:1.4;"></p>
+                        </div>
+
+                        <!-- PARAMETERS DEFINITION REFERENCE GUIDE (EMBEDDED) -->
+                        <div class="param-info-panel">
+                            <div class="param-section">
+                                <h5>1. BMI Classifications Reference</h5>
+                                <table class="param-table">
+                                    <thead>
+                                        <tr style="background:#f8fafc; font-weight:600; color:#94a3b8">
+                                            <th>BMI Range</th>
+                                            <th>Classification</th>
+                                            <th>Health Target Insight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Below 18.5</td><td style="color:#b45309">Underweight</td><td>Low nutrient reserves; lean weight gains recommended.</td></tr>
+                                        <tr><td>18.5 – 24.9</td><td style="color:#047857; font-weight:600">Normal</td><td>Optimal muscle-to-weight balance. Lowest statistical risk.</td></tr>
+                                        <tr><td>25.0 – 29.9</td><td style="color:#b45309">Overweight</td><td>Elevated body mass; perfect window for body recomp.</td></tr>
+                                        <tr><td>30.0 +</td><td style="color:#b91c1c">Obese</td><td>Increased metabolic stress load; steady adjustments advised.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="param-section">
+                                <h5>2. Basal Metabolic Rate (BMR) Guide</h5>
+                                <p>BMR represents the base calorie baseline your body burns strictly at rest to perform natural life support operations (breathing, organs support). Use this value to regulate weight management limits: to lose fat, secure a healthy calorie deficit below your TDEE output, but stay safely around your BMR threshold to avoid lean tissue loss.</p>
+                            </div>
+
+                            <div class="param-section">
+                                <h5>3. Visceral Organ Fat Scale Index</h5>
+                                <p>Unlike the fat under your skin, visceral fat builds deep inside the abdomen surrounding critical organs. The proxy scores align as follows:</p>
+                                <p style="margin-top:0.25rem;">• <strong>1 – 9 (Healthy Baseline):</strong> Balanced internal distribution; optimal low-risk framework.</p>
+                                <p>• <strong>10 – 14 (High Risk Index):</strong> Elevated abdominal layout; clean insulin-sensitive diets can quickly resolve this area.</p>
+                                <p>• <strong>15 – 20 (Critical Risk Index):</strong> Heavy organ stress encapsulation layer; prioritize cardiovascular pacing and consistent caloric targets.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Core App Logic -->
+    <!-- Core App Logic System Bundle -->
     <script>
-        // --- Responsive Navbar Interactive Control Logic ---
+        // --- Single-Page Router System ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active-page'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            
+            if (tabId === 'dashboard') {
+                document.getElementById('page-dashboard').classList.add('active-page');
+                document.getElementById('nav-dashboard').classList.add('active');
+                updateDashboard();
+            } else if (tabId === 'fitness') {
+                document.getElementById('page-fitness').classList.add('active-page');
+                document.getElementById('nav-fitness').classList.add('active');
+                loadFitnessProfile();
+            }
+        }
+
+        // --- Responsive Menu Control Drawer ---
         const burgerBtn = document.getElementById('navBurger');
         const navLinks = document.getElementById('navLinks');
         const navOverlay = document.getElementById('navOverlay');
@@ -216,29 +375,93 @@
         function toggleMenu() {
             const isOpen = navLinks.classList.toggle('sidebar-open');
             navOverlay.classList.toggle('active', isOpen);
-            
             if (isOpen) {
-                line1.setAttribute('d', 'M6 18L18 6');
-                line2.style.opacity = '0';
-                line3.setAttribute('d', 'M6 6l12 12');
+                line1.setAttribute('d', 'M6 18L18 6'); line2.style.opacity = '0'; line3.setAttribute('d', 'M6 6l12 12');
             } else {
-                line1.setAttribute('d', 'M4 6h16');
-                line2.style.opacity = '1';
-                line3.setAttribute('d', 'M4 18h16');
+                line1.setAttribute('d', 'M4 6h16'); line2.style.opacity = '1'; line3.setAttribute('d', 'M4 18h16');
+            }
+        }
+        burgerBtn.addEventListener('click', toggleMenu);
+        navOverlay.addEventListener('click', toggleMenu);
+
+        // --- Biometric Calculation Analytics (BMI, BMR, Visceral Fat) ---
+        let latestWeight = 0;
+
+        function loadFitnessProfile() {
+            if(localStorage.getItem('fitHeight')) document.getElementById('fitHeight').value = localStorage.getItem('fitHeight');
+            if(localStorage.getItem('fitAge')) document.getElementById('fitAge').value = localStorage.getItem('fitAge');
+            if(localStorage.getItem('fitWaist')) document.getElementById('fitWaist').value = localStorage.getItem('fitWaist');
+            if(localStorage.getItem('fitBodyType')) document.getElementById('fitBodyType').value = localStorage.getItem('fitBodyType');
+            const storedGender = localStorage.getItem('gender');
+            if(storedGender) {
+                document.querySelectorAll('input[name="gender"]').forEach(radio => {
+                    radio.checked = (radio.value === storedGender);
+                });
+            }
+            if (latestWeight > 0) {
+                calculateFitnessComposition();
+            } else {
+                document.getElementById('calculationNotice').textContent = "Log at least one weight entry in the Dashboard first to enable composition metrics.";
             }
         }
 
-        burgerBtn.addEventListener('click', toggleMenu);
-        navOverlay.addEventListener('click', toggleMenu);
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (navLinks.classList.contains('sidebar-open')) toggleMenu();
-            });
-        });
+        function calculateFitnessComposition() {
+            const height = parseFloat(document.getElementById('fitHeight').value);
+            const age = parseInt(document.getElementById('fitAge').value);
+            const waist = parseFloat(document.getElementById('fitWaist').value);
+            const bodyType = document.getElementById('fitBodyType').value;
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+
+            if (!height || !age || !waist || latestWeight <= 0) return;
+
+            localStorage.setItem('fitHeight', height);
+            localStorage.setItem('fitAge', age);
+            localStorage.setItem('fitWaist', waist);
+            localStorage.setItem('fitBodyType', bodyType);
+            localStorage.setItem('gender', gender);
+
+            document.getElementById('calculationNotice').style.display = 'none';
+            document.getElementById('fitnessResults').style.display = 'flex';
+
+            // 1. BMI Calculation
+            const heightMeters = height / 100;
+            const bmi = latestWeight / (heightMeters * heightMeters);
+            document.getElementById('resBMI').textContent = bmi.toFixed(1);
+            
+            const bmiBadge = document.getElementById('resBMIBadge');
+            bmiBadge.className = "badge";
+            if(bmi < 18.5) { bmiBadge.textContent = "Underweight"; bmiBadge.classList.add('status-warning'); }
+            else if(bmi < 25) { bmiBadge.textContent = "Normal"; bmiBadge.classList.add('status-normal'); }
+            else if(bmi < 30) { bmiBadge.textContent = "Overweight"; bmiBadge.classList.add('status-warning'); }
+            else { bmiBadge.textContent = "Obese"; bmiBadge.classList.add('status-danger'); }
+
+            // 2. BMR Calculation (Mifflin-St Jeor)
+            let bmr = (10 * latestWeight) + (6.25 * height) - (5 * age);
+            bmr = (gender === 'male') ? bmr + 5 : bmr - 161;
+            document.getElementById('resBMR').innerHTML = `${Math.round(bmr)} <span style="font-size:0.875rem; font-weight:normal; color:#64748b">kcal/day</span>`;
+
+            // 3. Visceral Fat proxy estimate
+            let visceralEstimate = (waist * 0.45) + (age * 0.1) - (height * 0.05);
+            if (gender === 'female') visceralEstimate -= 2;
+            const visceralIndex = Math.max(1, Math.min(20, Math.round(visceralEstimate)));
+            document.getElementById('resVisceral').textContent = visceralIndex;
+            
+            const visceralBadge = document.getElementById('resVisceralBadge');
+            visceralBadge.className = "badge";
+            if (visceralIndex <= 9) { visceralBadge.textContent = "Healthy"; visceralBadge.classList.add('status-normal'); }
+            else if (visceralIndex <= 14) { visceralBadge.textContent = "High Risk"; visceralBadge.classList.add('status-warning'); }
+            else { visceralBadge.textContent = "Critical Risk"; visceralBadge.classList.add('status-danger'); }
+
+            // 4. Somatotype blueprint contextual insights
+            const insights = {
+                mesomorph: "Mesomorph structural patterns showcase optimal natural muscular distribution and balanced adaptive calorie utilization frames. Responsive to progressive training loads and balanced macro splits.",
+                ectomorph: "Ectomorph traits point to linear lean frames and accelerated baseline metabolic rates. Focus on deliberate macro compositions and systemic target training models to preserve core structure efficiently.",
+                endomorph: "Endomorph tendencies demonstrate stockier functional baselines with high storage efficiency dynamics. Training maps should optimize caloric execution loads and maintain meticulous macro configurations."
+            };
+            document.getElementById('resBodyInsight').textContent = insights[bodyType];
+        }
 
         // --- Core Weight Log Calculations & Data Management (IndexedDB) ---
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-
         let db;
         const dbName = "WeightTrackerDB";
         const storeName = "weights";
@@ -285,6 +508,7 @@
             req.onsuccess = function() {
                 const data = req.result;
                 data.sort((a, b) => new Date(a.date) - new Date(b.date));
+                if (data.length > 0) latestWeight = data[data.length - 1].weight;
                 renderMetrics(data);
                 renderHistoryTable(data);
                 renderWeeklySummary(data);
@@ -372,11 +596,7 @@
 
             const weeklyAverages = [];
             for (const [weekStart, weights] of Object.entries(weeks)) {
-                weeklyAverages.push({ 
-                    weekStart, 
-                    avgWeight: weights.reduce((a, b) => a + b, 0) / weights.length, 
-                    entryCount: weights.length 
-                });
+                weeklyAverages.push({ weekStart, avgWeight: weights.reduce((a, b) => a + b, 0) / weights.length, entryCount: weights.length });
             }
             
             weeklyAverages.sort((a, b) => new Date(a.weekStart) - new Date(b.weekStart));
